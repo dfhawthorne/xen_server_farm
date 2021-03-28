@@ -1,0 +1,43 @@
+---
+# ------------------------------------------------------------------------------
+# Builds my XEN Server Farm from scratch
+#
+# This script runs as root on victoria.yaocm.id.au using ssh configuration
+#   entry called 'victoria_root'.
+# ------------------------------------------------------------------------------
+
+- hosts:                victoria_root
+
+  tasks:
+  
+  # ------------------- Add Bridge
+  #                     Rather than using nmcli, I have hard-coded the interface
+  #                     configuration files.
+  
+  - name:               "Add bridges"
+    script:
+      chdir:            /etc/sysconfig/network-scripts
+      cmd:              scripts/create_bridges.sh
+      creates:          /etc/sysconfig/network-scripts/ifcfg-xenbr0
+      executable:       /bin/bash
+    notify:             "restart network"
+
+  # ------------------- Create Repository
+
+  - name:               "Create Repository"
+    file:
+      path:             "/OVS/{{ item }}"
+      state:            directory
+    with_items:
+      -                 iso_pool
+      -                 seed_pool
+      -                 running_pool
+
+  # ------------------- Handlers
+  
+  handlers:
+  
+  - name:               "restart network"
+    command:
+      cmd:              "service network restart"
+...
