@@ -1,35 +1,30 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------------------
-# Create bridges
+# Create subinterfaces on eth1
 # ------------------------------------------------------------------------------
 cd /etc/sysconfig/network-scripts
-for bridge in 0 1 2 3
+for subif in 1 2 3
 do
-    nw=$(((bridge + 1)))
+    bridge=${subif}
+    ifname="eth1:${subif}"
     bridgename="xenbr${bridge}"
-    # ==== Create bridge
-    cat <<DONE >ifcfg-${bridgename}
+    # ==== Create subinterface
+    cat <<DONE >ifcfg-${ifname}
 # -----------------------------------------------------------------------------
-# Bridge ${bridgename}
+# Sub-interface #${subif} on eth1 to support bridge ${bridgename}
 # Generated $(date +"%F %T")
 # -----------------------------------------------------------------------------
 # Device identification
-DEVICE="${bridgename}"
+DEVICE="${ifname}"
 UUID="$(uuidgen)"
+$(grep HWADDR ifcfg-eth1)
 # Device options
-BOOTPROTO="static"
-TYPE="Bridge"
+ONPARENT="yes"
+TYPE="Ethernet"
+MTU="9000"
 ONBOOT="yes"
-DELAY="0"
 NM_CONTROLLED="no"
-# IPV4 Networking
-IPADDR="192.168.${nw}.100"
-NETMASK="255.255.255.0"
-GATEWAY="192.168.1.1"
-# DNS
-DNS1="192.168.1.252"
-DNS2="192.168.1.1"
-PEERDNS="yes"
-DOMAIN="yaocm.id.au"
+# Bridge
+BRIDGE="${bridgename}"
 DONE
 done 

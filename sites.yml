@@ -17,9 +17,27 @@
   - name:               "Add bridges"
     script:
       chdir:            /etc/sysconfig/network-scripts
-      cmd:              scripts/create_bridges.sh
-      creates:          /etc/sysconfig/network-scripts/ifcfg-xenbr0
+      cmd:              "scripts/{{ item.script }}"
+      creates:          "/etc/sysconfig/network-scripts/{{ item.creates }}"
       executable:       /bin/bash
+    with_items:
+      -                 { script: "create_bridges.sh", creates: "ifcfg-xenbr0" }
+      -                 { script: "create_subif_on_eth1.sh", creates: "ifcfg-eth1:1" }
+    register:           add_bridges
+    notify:             "restart network"
+
+  - name:               "Display output from add bridges"
+    debug:
+      var:              add_bridges.stdout_lines
+    when:               add_bridges.stdout_lines is defined
+
+  - name:               "Create bridge on eth0"
+    blockinfile:
+      insertafter:      EOF
+      path:             /etc/sysconfig/network-scripts/ifcfg-eth0
+      block:            |
+        # Bridge 
+        BRIDGE="xenbr0" 
     notify:             "restart network"
 
   # ------------------- Create Repository
@@ -38,6 +56,7 @@
   handlers:
   
   - name:               "restart network"
-    command:
-      cmd:              "service network restart"
+    service:
+      name:             network
+      state:            restarted
 ...
