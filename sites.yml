@@ -8,6 +8,39 @@
 
 - hosts:                victoria_root
 
+# ------------------------------------------------------------------------------
+# Global variables
+# ------------------------------------------------------------------------------
+
+  vars:
+    iso_images:
+    - {src_dir: "Oracle Enterprise Linux/Oracle Enterprise Linux 6.5",
+       dvd:     "V41362-01.iso",
+       sum:     "a65041fbe0ba67e3ff6f5f93804a8f47d5b5f132",
+       mp:      "OL6.5"}
+    - {src_dir: "Oracle Enterprise Linux/Oracle Enterprise Linux 7.7",
+       dvd:     "V983339-01.iso",
+       sum:     "3ef94628cf1025dab5f10bbc1ed2005ca0cb0933",
+       mp:      "OL7.7"}
+    - {src_dir: "Oracle Enterprise Linux/Oracle Enterprise Linux 8.1",
+       dvd:     "V984216-01.iso",
+       sum:     "26262db78fa7550a0ccd64c4ead7c7c57c901de6",
+       mp:      "OL8.1"}
+    - {src_dir: "Ubuntu",
+       dvd:     "ubuntu-18.04.4-live-server-amd64.iso",
+       sum:     "6a341a29cd0626c1a4a6e1019d48b1fbf91ced1d",
+       mp:      "Ubuntu18.04"}
+    - {src_dir: "Ubuntu",
+       dvd:     "ubuntu-20.04.2-live-server-amd64.iso",
+       sum:     "9af24f2d3a01dd8531d65d357059a6dc216f1625",
+       mp:      "Ubuntu20.04"}
+    scripts:
+    - {script: "create_bridges.sh",
+       creates: "ifcfg-xenbr0"}
+    - {script: "create_subif_on_eth1.sh",
+       creates: "ifcfg-eth1:1"}
+
+
   tasks:
   
   # ------------------- Add Bridge
@@ -20,16 +53,19 @@
       path:             "/etc/sysconfig/network-scripts/{{ item }}"
       state:            absent
     when:               remove_bridge is defined
-    with_items:
+    loop:
       -                 "ifcfg-xenbr0"
       -                 "ifcfg-eth1:1"
       
   - name:               "Allow jumbo packages on XEN networks"
     lineinfile:
       path:             "/etc/sysconfig/network-scripts/ifcfg-eth1"
-      line:             'MTU="9000"'
-      regexp:           "^MTU="
+      line:             "{{ item.line }}"
+      regexp:           "{{ item.regexp }}"
       state:            present
+    loop:
+      - { regexp: "^MTU=",    line: 'MTU="9000"'  }
+      - { regexp: "^ONBOOT=", line: 'ONBOOT="yes"' }
     notify:             "restart network"
 
   - name:               "Add bridges"
@@ -38,9 +74,7 @@
       cmd:              "scripts/{{ item.script }}"
       creates:          "/etc/sysconfig/network-scripts/{{ item.creates }}"
       executable:       /bin/bash
-    with_items:
-      -                 { script: "create_bridges.sh", creates: "ifcfg-xenbr0" }
-      -                 { script: "create_subif_on_eth1.sh", creates: "ifcfg-eth1:1" }
+    loop:               "{{ scripts }}"
     register:           add_bridges
     notify:             "restart network"
 
@@ -64,7 +98,7 @@
     file:
       path:             "/OVS/{{ item }}"
       state:            directory
-    with_items:
+    loop:
       -                 iso_pool
       -                 seed_pool
       -                 running_pool
@@ -73,42 +107,28 @@
 
   - name:               "Copy ISO images off NAS"
     copy:
-      dest:             "/OVS/iso_pool/{{ item | basename }}"
+      checksum:         "{{ item.sum }}"
+      dest:             "/OVS/iso_pool/{{ item.dvd }}"
       mode:             0644
-      src:              "/opt/share/Nundah/software/Linux/{{ item }}"
-    with_items:
-      - "Oracle Enterprise Linux/Oracle Enterprise Linux 6.5/V41362-01.iso"
-      - "Oracle Enterprise Linux/Oracle Enterprise Linux 7.7/V983339-01.iso"
-      - "Oracle Enterprise Linux/Oracle Enterprise Linux 8.1/V984216-01.iso"
-      - "Ubuntu/ubuntu-18.04.4-live-server-amd64.iso"
-      - "Ubuntu/ubuntu-20.04.2-live-server-amd64.iso"
+      src:              "/opt/share/Nundah/software/Linux/{{ item.src_dir }}/{{ item.dvd }}"
+    loop:               "{{ iso_images }}"
 
   # ------------------- Mount ISO Images
 
   - name:               "Create ISO Image Mount Points"
     file:
-      path:             "/OVS/iso_pool/mounted/{{ item }}"
+      path:             "/OVS/iso_pool/mounted/{{ item.mp }}"
       state:            directory
-    with_items:
-      - "OL6.5"
-      - "OL7.7"
-      - "OL8.1"
-      - "Ubuntu18.04"
-      - "Ubuntu20.04"
+    loop:               "{{ iso_images }}"
 
   - name:               "Mount ISO Images"
     mount:
       fstype:           "iso9660"
       opts:             "loop,ro,noauto"
       path:             "/OVS/iso_pool/mounted/{{ item.mp }}"
-      src:              "/OVS/iso_pool/{{ item.iso }}"
+      src:              "/OVS/iso_pool/{{ item.dvd }}"
       state:            mounted
-    with_items:
-      - { mp: "OL6.5", iso: "V41362-01.iso" }
-      - { mp: "OL7.7", iso: "V983339-01.iso" }
-      - { mp: "OL8.1", iso: "V984216-01.iso" }
-      - { mp: "Ubuntu18.04", iso: "ubuntu-18.04.4-live-server-amd64.iso" }
-      - { mp: "Ubuntu20.04", iso: "ubuntu-20.04.2-live-server-amd64.iso" }
+    loop:               "{{ iso_images }}"
 
   # ------------------- Handlers
   
