@@ -83,7 +83,7 @@
       regexp:           "{{ item.regexp }}"
       state:            present
     loop:
-      - { regexp: "^MTU=",    line: 'MTU="9000"'  }
+      - { regexp: "^MTU=", line: 'MTU="9000"' }
       - { regexp: "^ONBOOT=", line: 'ONBOOT="yes"' }
     notify:             "restart network"
 
@@ -121,6 +121,7 @@
       -                 iso_pool
       -                 seed_pool
       -                 running_pool
+      -                 scripts
 
   # ------------------- Copy ISO images off NAS
 
@@ -140,14 +141,22 @@
       state:            directory
     loop:               "{{ iso_images }}"
 
-  - name:               "Mount ISO Images"
-    mount:
-      fstype:           "iso9660"
-      opts:             "loop,ro,noauto"
-      path:             "/OVS/iso_pool/mounted/{{ item.mp }}"
-      src:              "/OVS/iso_pool/{{ item.dvd }}"
-      state:            mounted
-    loop:               "{{ iso_images }}"
+  - name:               "Create Script to Mount ISO Images"
+    template:
+      dest:             "/OVS/scripts/mount_dvd.sh"
+      mode:             0700
+      src:              "mount_dvd.sh.j2"
+
+  - name:               "Mount ISO Images Using Script"
+    command:
+      cmd:              "/OVS/scripts/mount_dvd.sh"
+    register:           mount_dvd
+    changed_when:       '" mounted as " in mount_dvd.stdout'
+
+  - name:               "Display Output from Mount DVD"
+    debug:
+      var:              mount_dvd.stdout_lines
+    when:               mount_dvd.stdout_lines is defined
 
   # ------------------- Create Gold Images
 
@@ -175,6 +184,25 @@
       dest:             "/OVS/seed_pool/{{ item.vm_name }}/hvm.cfg"
       src:              hvm.cfg.j2
     loop:               "{{ iso_images }}"
+
+  # ------------------- Create CPU Pools
+
+  - name:               "Create Script to Create CPU Pools"
+    template:
+      dest:             "/OVS/scripts/create_cpu_pools.sh"
+      mode:             0700
+      src:              "create_cpu_pools.sh.j2"
+
+  - name:               "Create CPU Pools Using Script"
+    command:
+      cmd:              "/OVS/scripts/create_cpu_pools.sh"
+    register:           create_cpu_pools
+    changed_when:       '"Using config file " in create_cpu_pools.stdout'
+
+  - name:               "Display Output from Create CPU Pools"
+    debug:
+      var:              create_cpu_pools.stdout_lines
+    when:               create_cpu_pools.stdout_lines is defined
 
   # ------------------- Handlers
   

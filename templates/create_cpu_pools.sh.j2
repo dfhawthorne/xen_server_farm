@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Creates CPU Pools after Xen Server Restart
+{% include "header.j2" %}
+# ------------------------------------------------------------------------------
+
+pools=$(xl cpupool-list --cpus)
+
+# Remove extraneous CPUs from the default pool
+
+for cpu in {1..7}
+do
+    xl cpupool-cpu-remove Pool-0 ${cpu}
+done
+
+# Create the CPU Pools, if they do not exist
+
+case "${pools}" in
+    *"RAC1"*) ;;
+    *) xl cpupool-create name=\"RAC1\"
+       xl cpupool-cpu-add RAC1 1
+       xl cpupool-cpu-add RAC1 2 ;;
+esac
+
+case "${pools}" in
+    *"RAC2"*) ;;
+    *) xl cpupool-create name=\"RAC2\"
+       xl cpupool-cpu-add RAC2 3
+       xl cpupool-cpu-add RAC2 4 ;;
+
+esac
+
+case "${pools}" in
+    *"OEM"*) ;;
+    *) xl cpupool-create name=\"OEM\"
+       xl cpupool-cpu-add OEM 5
+       xl cpupool-cpu-add OEM 6 ;;
+
+esac
+
+case "${pools}" in
+    *"Client"*) ;;
+    *) xl cpupool-create name=\"Client\"
+       xl cpupool-cpu-add Client 7 ;;
+esac
+

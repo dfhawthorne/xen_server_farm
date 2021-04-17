@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Mount loopback devices after Xen Server restart
+{% include "header.j2" %}
+# ------------------------------------------------------------------------------
+
+{% for item in iso_images %}
+findmnt "/OVS/iso_pool/mounted/{{ item.mp }}" || { \
+    mount -t iso9660 -o loop,ro,noauto "/OVS/iso_pool/{{ item.dvd }}" \
+        "/OVS/iso_pool/mounted/{{ item.mp }}" && \
+    printf "%s mounted as %s\n" \
+        "/OVS/iso_pool/{{ item.dvd }}" \
+        "/OVS/iso_pool/mounted/{{ item.mp }}"
+    }
+        
+{% endfor %}
+
