@@ -8,7 +8,7 @@
 ################################################################################
 
 name="{{ item.vm_name }}"
-type="hvm"
+builder="hvm"
 
 ################################################################################
 # General Options
@@ -22,10 +22,6 @@ maxmem=8400
 on_poweroff="destroy"
 on_reboot="destroy"
 
-# HVM guest options
-
-firmware="ovmf"
-
 ################################################################################
 # Devices
 ################################################################################
@@ -34,7 +30,7 @@ firmware="ovmf"
 # A list of 'vifspec' entries as described in
 # docs/misc/xl-network-configuration.markdown
 vif = [
-      'mac=00:16:3E:00:00:15,bridge=xenbr0'
+      'type=ioemu,mac=00:16:3E:00:00:15,bridge=xenbr0'
       ]
 
 # Disk Devices
@@ -42,22 +38,21 @@ vif = [
 # docs/misc/xl-disk-configuration.txt
 
 disk = [
-       '/OVS/seed_pool/{{ item.vm_name }}/root.dsk,raw,xvda,rw',
-       '/OVS/iso_pool/{{ item.dvd }},raw,xvdc,ro,cdrom' 
+       'file:/OVS/seed_pool/{{ item.vm_name }}/root.dsk,xvda,w',
+       'file:/OVS/iso_pool/{{ item.dvd }},xvdc:cdrom,r' 
        ]
 
 ################################################################################
 # Fully-virtualised (HVM) Guest Specific Options
 ################################################################################
 
-# Processor and Platform Features
-
-device_model_version="qemu-xen"
-bios="ovmf"
-
 # Emulated VGA Graphics Device
 # Guest VGA console configuration, either SDL or VNC
 
+sdl        = 0
 vnc        = 1
+vncconsole = 1
 vnclisten  = "0.0.0.0"
 vncdisplay = 28
+serial     = 'pty'
+usbdevice  = 'tablet'
