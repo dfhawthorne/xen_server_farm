@@ -36,6 +36,13 @@
         vm_name:        "gold_ol8_1"
         }
     -   {
+        src_dir:        "Oracle Enterprise Linux/Oracle Enterprise Linux 9.1",
+        dvd:            "OracleLinux-R9-U1-x86_64-dvd.iso",
+        sum:            "540e8d83b9defc7a528e6763930f10156be4c52a",
+        mp:             "OL9.1",
+        vm_name:        "gold_ol9_1"
+        }
+    -   {
         src_dir:        "Ubuntu",
         dvd:            "ubuntu-18.04.4-live-server-amd64.iso",
         sum:            "6a341a29cd0626c1a4a6e1019d48b1fbf91ced1d",
@@ -48,6 +55,13 @@
         sum:            "9af24f2d3a01dd8531d65d357059a6dc216f1625",
         mp:             "Ubuntu20.04",
         vm_name:        "gold_ub20_04"
+        }
+    -   {
+        src_dir:        "Ubuntu",
+        dvd:            "ubuntu-22.04.2-live-server-amd64.iso",
+        sum:            "13bfec4b9a0cd83e17c06f787e5c23b10095a91d",
+        mp:             "Ubuntu22.04",
+        vm_name:        "gold_ub22_04"
         }
     scripts:
     -   {
