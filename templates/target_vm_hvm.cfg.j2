@@ -1,0 +1,69 @@
+################################################################################
+# Builds a gold-image
+{% include "header.j2" %}
+################################################################################
+
+################################################################################
+# Mandatory Configuration Items
+################################################################################
+
+name="{{ item.vm_name }}"
+builder="hvm"
+
+################################################################################
+# General Options
+################################################################################
+
+# Memory Allocation
+
+memory="{{ item.memory_size }}"
+maxmem="{{ item.memory_size }}"
+
+# CPU Allocation
+
+pool="{{ item.cpu_pool }}"
+vcpus="{{ item.num_cpus }}"
+maxvcpus="{{ item.num_cpus }}"
+
+################################################################################
+# Devices
+################################################################################
+
+# Network devices
+# A list of 'vifspec' entries as described in
+# docs/misc/xl-network-configuration.markdown
+vif = [
+      'type=ioemu,mac={{ item.mac_addr_1 }},bridge={{ item.bridge_1 }}'
+      {% if item.mac_addr_2 is defined -%}
+      ,'type=ioemu,mac={{ item.mac_addr_2 }},bridge={{ item.bridge_2 }}'
+      {%- endif %}
+      {% if item.mac_addr_3 is defined -%}
+      ,'type=ioemu,mac={{ item.mac_addr_3 }},bridge={{ item.bridge_3 }}'
+      {%- endif %}
+      {% if item.mac_addr_4 is defined -%}
+      ,'type=ioemu,mac={{ item.mac_addr_4 }},bridge={{ item.bridge_4 }}'
+      {%- endif %}
+      ]
+
+# Disk Devices
+# A list of 'diskspec' entries as described in
+# docs/misc/xl-disk-configuration.txt
+
+disk = [
+       'file:/OVS/running_pool/{{ item.vm_name }}/root.dsk,xvda,w'
+       ]
+
+################################################################################
+# Fully-virtualised (HVM) Guest Specific Options
+################################################################################
+
+# Emulated VGA Graphics Device
+# Guest VGA console configuration, either SDL or VNC
+
+sdl        = 0
+vnc        = 1
+vncconsole = 1
+vnclisten  = "0.0.0.0"
+vncdisplay = "{{ item.vnc_port }}"
+serial     = 'pty'
+usbdevice  = 'tablet'

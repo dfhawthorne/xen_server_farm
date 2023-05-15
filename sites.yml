@@ -17,49 +17,42 @@
     -   {
         src_dir:        "Oracle Enterprise Linux/Oracle Enterprise Linux 6.5",
         dvd:            "V41362-01.iso",
-        sum:            "a65041fbe0ba67e3ff6f5f93804a8f47d5b5f132",
         mp:             "OL6.5",
         vm_name:        "gold_ol6_5"
         }
     -   {
         src_dir:        "Oracle Enterprise Linux/Oracle Enterprise Linux 7.7",
         dvd:            "V983339-01.iso",
-        sum:            "3ef94628cf1025dab5f10bbc1ed2005ca0cb0933",
         mp:             "OL7.7",
         vm_name:        "gold_ol7_7"
         }
     -   {
         src_dir:        "Oracle Enterprise Linux/Oracle Enterprise Linux 8.1",
         dvd:            "V984216-01.iso",
-        sum:            "26262db78fa7550a0ccd64c4ead7c7c57c901de6",
         mp:             "OL8.1",
         vm_name:        "gold_ol8_1"
         }
     -   {
         src_dir:        "Oracle Enterprise Linux/Oracle Enterprise Linux 9.1",
         dvd:            "OracleLinux-R9-U1-x86_64-dvd.iso",
-        sum:            "540e8d83b9defc7a528e6763930f10156be4c52a",
         mp:             "OL9.1",
         vm_name:        "gold_ol9_1"
         }
     -   {
         src_dir:        "Ubuntu",
         dvd:            "ubuntu-18.04.4-live-server-amd64.iso",
-        sum:            "6a341a29cd0626c1a4a6e1019d48b1fbf91ced1d",
         mp:             "Ubuntu18.04",
         vm_name:        "gold_ub18_04"
         }
     -   {
         src_dir:        "Ubuntu",
         dvd:            "ubuntu-20.04.2-live-server-amd64.iso",
-        sum:            "9af24f2d3a01dd8531d65d357059a6dc216f1625",
         mp:             "Ubuntu20.04",
         vm_name:        "gold_ub20_04"
         }
     -   {
         src_dir:        "Ubuntu",
         dvd:            "ubuntu-22.04.2-live-server-amd64.iso",
-        sum:            "13bfec4b9a0cd83e17c06f787e5c23b10095a91d",
         mp:             "Ubuntu22.04",
         vm_name:        "gold_ub22_04"
         }
@@ -72,6 +65,57 @@
         script:         "create_subif_on_eth1.sh",
         creates:        "ifcfg-eth1:1"
         }
+    target_vms:
+    -   {
+        vm_name:        "redfern1",
+        gold_image:     "gold_ol8_1",
+        ip_addr_1:      "192.168.1.140",
+        mac_addr_1:     "00:16:3E:00:00:0E",
+        bridge_1:       "xenbr0",
+        ip_addr_2:      "192.168.2.140",
+        mac_addr_2:     "00:16:3E:00:00:0F",
+        bridge_2:       "xenbr1",
+        memory_size:    "4096",
+        cpu_pool:       "RAC1",
+        num_cpus:       2,
+        vnc_port:       3
+        }
+    -   {
+        vm_name:        "redfern2",
+        gold_image:     "gold_ol8_1",
+        ip_addr_1:      "192.168.1.141",
+        mac_addr_1:     "00:16:3E:00:00:12",
+        bridge_1:       "xenbr0",
+        ip_addr_2:      "192.168.2.141",
+        mac_addr_2:     "00:16:3E:00:00:13",
+        bridge_2:       "xenbr1",
+        memory_size:    "4096",
+        cpu_pool:       "RAC2",
+        num_cpus:       2,
+        vnc_port:       4
+        }
+    -   {
+        vm_name:        "goldengate1",
+        gold_image:     "gold_ol8_1",
+        ip_addr_1:      "192.168.1.150",
+        mac_addr_1:     "00:16:3E:00:00:1E",
+        bridge_1:       "xenbr0",
+        memory_size:    "3176",
+        cpu_pool:       "RAC1",
+        num_cpus:       2,
+        vnc_port:       24
+        }
+    -   {
+        vm_name:        "goldengate2",
+        gold_image:     "gold_ol8_1",
+        ip_addr_1:      "192.168.1.151",
+        mac_addr_1:     "00:16:3E:00:00:1F",
+        bridge_1:       "xenbr0",
+        memory_size:    "3176",
+        cpu_pool:       "RAC2",
+        num_cpus:       2,
+        vnc_port:       25
+        }
 
 
   tasks:
@@ -82,7 +126,7 @@
   #                     Some bridges are built on sub-interfaces
 
   - name:               "Optionally remove bridges and associated sub-interfaces"
-    file:
+    ansible.builtin.file:
       path:             "/etc/sysconfig/network-scripts/{{ item }}"
       state:            absent
     when:               remove_bridge is defined
@@ -91,7 +135,7 @@
       -                 "ifcfg-eth1:1"
       
   - name:               "Allow jumbo packages on XEN networks"
-    lineinfile:
+    ansible.builtin.lineinfile:
       path:             "/etc/sysconfig/network-scripts/ifcfg-eth1"
       line:             "{{ item.line }}"
       regexp:           "{{ item.regexp }}"
@@ -102,7 +146,7 @@
     notify:             "restart network"
 
   - name:               "Add bridges"
-    script:
+    ansible.builtin.script:
       chdir:            /etc/sysconfig/network-scripts
       cmd:              "scripts/{{ item.script }}"
       creates:          "/etc/sysconfig/network-scripts/{{ item.creates }}"
@@ -112,12 +156,12 @@
     notify:             "restart network"
 
   - name:               "Display output from add bridges"
-    debug:
+    ansible.builtin.debug:
       var:              add_bridges.stdout_lines
     when:               add_bridges.stdout_lines is defined
 
   - name:               "Create bridge on eth0"
-    blockinfile:
+    ansible.builtin.blockinfile:
       insertafter:      EOF
       path:             /etc/sysconfig/network-scripts/ifcfg-eth0
       block:            |
@@ -128,7 +172,7 @@
   # ------------------- Create Repository
 
   - name:               "Create Repository"
-    file:
+    ansible.builtin.file:
       path:             "/OVS/{{ item }}"
       state:            directory
     loop:
@@ -138,92 +182,168 @@
       -                 scripts
 
   # ------------------- Copy ISO images off NAS
+  # Ref: https://sites.google.com/view/yetanotherocm/home/procedures/miscellaneous/use-nfs-for-oracle-software
+  
+  - name:               "Install NFS Client"
+    ansible.builtin.yum:
+      name:             nfs-utils
+      state:            present
+  
+  - name:               "Create NFS mount point"
+    ansible.builtin.file:
+      path:             "/opt/share/Nundah"
+      state:            directory
+  
+  - name:               "Mount Software Directory as NFS"
+    ansible.posix.mount:
+      path:             "/opt/share/Nundah"
+      src:              "narrabri.yaocm.id.au:/data/Software"
+      fstype:           "nfs4"
+      opts:             "ro,bg,hard,nointr,rsize=32768,wsize=32768,tcp,vers=4,timeo=600"
+      state:            mounted
 
   - name:               "Copy ISO images off NAS"
-    copy:
-      checksum:         "{{ item.sum }}"
-      dest:             "/OVS/iso_pool/{{ item.dvd }}"
-      mode:             0644
-      src:              "/opt/share/Nundah/software/Linux/{{ item.src_dir }}/{{ item.dvd }}"
+    ansible.builtin.command:
+      argv:
+      - cp
+      - "/opt/share/Nundah/software/Linux/{{ item.src_dir }}/{{ item.dvd }}"
+      - "/OVS/iso_pool/{{ item.dvd }}"
+      creates:          "/OVS/iso_pool/{{ item.dvd }}"
     loop:               "{{ iso_images }}"
 
   # ------------------- Mount ISO Images
 
   - name:               "Create ISO Image Mount Points"
-    file:
+    ansible.builtin.file:
       path:             "/OVS/iso_pool/mounted/{{ item.mp }}"
       state:            directory
     loop:               "{{ iso_images }}"
 
   - name:               "Create Script to Mount ISO Images"
-    template:
+    ansible.builtin.template:
       dest:             "/OVS/scripts/mount_dvd.sh"
       mode:             0700
       src:              "mount_dvd.sh.j2"
 
   - name:               "Mount ISO Images Using Script"
-    command:
+    ansible.builtin.command:
       cmd:              "/OVS/scripts/mount_dvd.sh"
     register:           mount_dvd
     changed_when:       '" mounted as " in mount_dvd.stdout'
 
   - name:               "Display Output from Mount DVD"
-    debug:
+    ansible.builtin.debug:
       var:              mount_dvd.stdout_lines
-    when:               mount_dvd.stdout_lines is defined
+    when:
+    -                   mount_dvd.changed
+    -                   mount_dvd.stdout_lines is defined
 
   # ------------------- Create Gold Images
 
   - name:               "Stop and disable XEND Service"
-    service:
+    ansible.builtin.service:
       name:             xend
       enabled:          false
       state:            stopped
 
   - name:               "Create Gold Image Directories"
-    file:
+    ansible.builtin.file:
       path:             "/OVS/seed_pool/{{ item.vm_name }}"
       state:            directory
     loop:               "{{ iso_images }}"
 
   - name:               "Creates root disk for Gold Images"
-    command:
+    ansible.builtin.command:
       cmd:              "fallocate --length 50g root.dsk"
       creates:          "/OVS/seed_pool/{{ item.vm_name }}/root.dsk"
       chdir:            "/OVS/seed_pool/{{ item.vm_name }}"
     loop:               "{{ iso_images }}"
 
   - name:               "Create Gold Image Configuration Files"
-    template:
+    ansible.builtin.template:
       dest:             "/OVS/seed_pool/{{ item.vm_name }}/hvm.cfg"
-      src:              hvm.cfg.j2
+      src:              gold_image_hvm.cfg.j2
     loop:               "{{ iso_images }}"
 
   # ------------------- Create CPU Pools
 
   - name:               "Create Script to Create CPU Pools"
-    template:
+    ansible.builtin.template:
       dest:             "/OVS/scripts/create_cpu_pools.sh"
       mode:             0700
       src:              "create_cpu_pools.sh.j2"
 
   - name:               "Create CPU Pools Using Script"
-    command:
+    ansible.builtin.command:
       cmd:              "/OVS/scripts/create_cpu_pools.sh"
     register:           create_cpu_pools
     changed_when:       '"Using config file " in create_cpu_pools.stdout'
 
   - name:               "Display Output from Create CPU Pools"
-    debug:
+    ansible.builtin.debug:
       var:              create_cpu_pools.stdout_lines
-    when:               create_cpu_pools.stdout_lines is defined
+    when:
+    -                   create_cpu_pools.changed
+    -                   create_cpu_pools.stdout_lines is defined
+  
+  # ------------------- Check for Linux Installations
+  
+  - name:               "Copy MD5SUM Checksum Files"
+    ansible.builtin.copy:
+      dest:             /OVS/seed_pool/gold_images_md5sum.dat
+      src:              files/gold_images_md5sum.dat
+  
+  - name:               "Check the Gold Images"
+    ansible.builtin.shell:
+      cmd:              "md5sum --check /OVS/seed_pool/gold_images_md5sum.dat"
+  
+  # ------------------- Create Target VM
+  
+  - name:               "Create Target VM Directory"
+    ansible.builtin.file:
+      path:             "/OVS/running_pool/{{ item.vm_name }}"
+      state:            directory
+    loop:               "{{ target_vms }}"
+  
+  - name:               "Create Target VM Configuration File"
+    ansible.builtin.template:
+      dest:             "/OVS/running_pool/{{ item.vm_name }}/hvm.cfg"
+      src:              target_vm_hvm.cfg.j2
+    loop:               "{{ target_vms }}"
+  
+  - name:               "Copy Gold Images to Target VMs"
+    ansible.builtin.command:
+      argv:
+      - cp
+      - "/OVS/seed_pool/{{ item.gold_image }}/root.dsk"
+      - "/OVS/running_pool/{{ item.vm_name }}/root.dsk"
+      creates:          "/OVS/running_pool/{{ item.vm_name }}/root.dsk"
+    loop:               "{{ target_vms }}"
+  
+  # ------------------- Configure Target VM
+  
+  - name:               "Create Script to Configure Target VMs"
+    ansible.builtin.template:
+      dest:             "/OVS/running_pool/{{ item.vm_name }}/config_target_vm.sh"
+      src:              config_target_vm.sh.j2
+    loop:               "{{ target_vms }}"
+    
+  - name:               "Configure Target VMs"
+    ansible.builtin.shell:
+      cmd:              "sh /OVS/running_pool/{{ item.vm_name }}/config_target_vm.sh"
+    loop:               "{{ target_vms }}"
+    register:           config_tgt_vm
+#    changed_when:       config_tgt_vm.results.stdout contains "Configured."
+    
+  - debug:
+      var:              config_tgt_vm
 
   # ------------------- Handlers
   
   handlers:
   
   - name:               "restart network"
-    service:
+    ansible.builtin.service:
       name:             network
       state:            restarted
 ...
