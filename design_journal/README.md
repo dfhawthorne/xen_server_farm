@@ -10,4 +10,5 @@
 * [2023-03-02](2023_03_02.md) New ISO Images Added
 * [2023-05-08](2023_05_08.md) Creation of VM Images
 * [2023-05-10](2023_05_10.md) Build of Target VM Images
+* [2023-11-01](2023_11_01.md) Configure DHCP for Gold Images
 
