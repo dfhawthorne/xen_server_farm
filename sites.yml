@@ -69,10 +69,8 @@
     -   {
         vm_name:        "redfern1",
         gold_image:     "gold_ol8_1",
-        ip_addr_1:      "192.168.1.140",
         mac_addr_1:     "00:16:3E:00:00:0E",
         bridge_1:       "xenbr0",
-        ip_addr_2:      "192.168.2.140",
         mac_addr_2:     "00:16:3E:00:00:0F",
         bridge_2:       "xenbr1",
         memory_size:    "4096",
@@ -83,10 +81,8 @@
     -   {
         vm_name:        "redfern2",
         gold_image:     "gold_ol8_1",
-        ip_addr_1:      "192.168.1.141",
         mac_addr_1:     "00:16:3E:00:00:12",
         bridge_1:       "xenbr0",
-        ip_addr_2:      "192.168.2.141",
         mac_addr_2:     "00:16:3E:00:00:13",
         bridge_2:       "xenbr1",
         memory_size:    "4096",
@@ -97,7 +93,6 @@
     -   {
         vm_name:        "goldengate1",
         gold_image:     "gold_ol8_1",
-        ip_addr_1:      "192.168.1.150",
         mac_addr_1:     "00:16:3E:00:00:1E",
         bridge_1:       "xenbr0",
         memory_size:    "3176",
@@ -108,7 +103,6 @@
     -   {
         vm_name:        "goldengate2",
         gold_image:     "gold_ol8_1",
-        ip_addr_1:      "192.168.1.151",
         mac_addr_1:     "00:16:3E:00:00:1F",
         bridge_1:       "xenbr0",
         memory_size:    "3176",
@@ -197,7 +191,7 @@
   - name:               "Mount Software Directory as NFS"
     ansible.posix.mount:
       path:             "/opt/share/Nundah"
-      src:              "narrabri.yaocm.id.au:/data/Software"
+      src:              "192.168.1.253:/data/Software"
       fstype:           "nfs4"
       opts:             "ro,bg,hard,nointr,rsize=32768,wsize=32768,tcp,vers=4,timeo=600"
       state:            mounted
@@ -319,24 +313,6 @@
       - "/OVS/running_pool/{{ item.vm_name }}/root.dsk"
       creates:          "/OVS/running_pool/{{ item.vm_name }}/root.dsk"
     loop:               "{{ target_vms }}"
-  
-  # ------------------- Configure Target VM
-  
-  - name:               "Create Script to Configure Target VMs"
-    ansible.builtin.template:
-      dest:             "/OVS/running_pool/{{ item.vm_name }}/config_target_vm.sh"
-      src:              config_target_vm.sh.j2
-    loop:               "{{ target_vms }}"
-    
-  - name:               "Configure Target VMs"
-    ansible.builtin.shell:
-      cmd:              "sh /OVS/running_pool/{{ item.vm_name }}/config_target_vm.sh"
-    loop:               "{{ target_vms }}"
-    register:           config_tgt_vm
-#    changed_when:       config_tgt_vm.results.stdout contains "Configured."
-    
-  - debug:
-      var:              config_tgt_vm
 
   # ------------------- Handlers
   

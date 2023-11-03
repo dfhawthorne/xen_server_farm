@@ -12,3 +12,4 @@
 * [2023-05-10](2023_05_10.md) Build of Target VM Images
 * [2023-11-01](2023_11_01.md) Configure DHCP for Gold Images
 
+* [2023-11-03](2023_11_03.md) Completed XEN deployment
