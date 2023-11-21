@@ -1,5 +1,7 @@
 # Design Journal
 
+This is a diary of the design decisions made while building this repository.
+
 * [2021-03-28](2021_03_28.md) Initial Design
 * [2021-03-31](2021_03_31.md) Set up Xen Networking
 * [2021-04-02](2021_04_02.md) Add ISO Images
@@ -11,5 +13,6 @@
 * [2023-05-08](2023_05_08.md) Creation of VM Images
 * [2023-05-10](2023_05_10.md) Build of Target VM Images
 * [2023-11-01](2023_11_01.md) Configure DHCP for Gold Images
-
 * [2023-11-03](2023_11_03.md) Completed XEN deployment
+* [2023-11-21](2023_11_21.md) Increased Memory for Goldengate
+

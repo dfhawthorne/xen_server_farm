@@ -38,12 +38,12 @@
         mp:             "OL9.1",
         vm_name:        "gold_ol9_1"
         }
-    -   {
-        src_dir:        "Ubuntu",
-        dvd:            "ubuntu-18.04.4-live-server-amd64.iso",
-        mp:             "Ubuntu18.04",
-        vm_name:        "gold_ub18_04"
-        }
+#    -   {
+#        src_dir:        "Ubuntu",
+#        dvd:            "ubuntu-18.04.4-live-server-amd64.iso",
+#        mp:             "Ubuntu18.04",
+#        vm_name:        "gold_ub18_04"
+#        }
     -   {
         src_dir:        "Ubuntu",
         dvd:            "ubuntu-20.04.2-live-server-amd64.iso",
@@ -95,7 +95,7 @@
         gold_image:     "gold_ol8_1",
         mac_addr_1:     "00:16:3E:00:00:1E",
         bridge_1:       "xenbr0",
-        memory_size:    "3176",
+        memory_size:    "4120",
         cpu_pool:       "RAC1",
         num_cpus:       2,
         vnc_port:       24
@@ -105,7 +105,7 @@
         gold_image:     "gold_ol8_1",
         mac_addr_1:     "00:16:3E:00:00:1F",
         bridge_1:       "xenbr0",
-        memory_size:    "3176",
+        memory_size:    "4120",
         cpu_pool:       "RAC2",
         num_cpus:       2,
         vnc_port:       25
