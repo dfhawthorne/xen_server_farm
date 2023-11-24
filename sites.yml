@@ -38,12 +38,12 @@
         mp:             "OL9.1",
         vm_name:        "gold_ol9_1"
         }
-#    -   {
-#        src_dir:        "Ubuntu",
-#        dvd:            "ubuntu-18.04.4-live-server-amd64.iso",
-#        mp:             "Ubuntu18.04",
-#        vm_name:        "gold_ub18_04"
-#        }
+    -   {
+        src_dir:        "Ubuntu",
+        dvd:            "ubuntu-18.04.4-live-server-amd64.iso",
+        mp:             "Ubuntu18.04",
+        vm_name:        "gold_ub18_04"
+        }
     -   {
         src_dir:        "Ubuntu",
         dvd:            "ubuntu-20.04.2-live-server-amd64.iso",
@@ -95,7 +95,7 @@
         gold_image:     "gold_ol8_1",
         mac_addr_1:     "00:16:3E:00:00:1E",
         bridge_1:       "xenbr0",
-        memory_size:    "4120",
+        memory_size:    "5000",
         cpu_pool:       "RAC1",
         num_cpus:       2,
         vnc_port:       24
@@ -105,7 +105,7 @@
         gold_image:     "gold_ol8_1",
         mac_addr_1:     "00:16:3E:00:00:1F",
         bridge_1:       "xenbr0",
-        memory_size:    "4120",
+        memory_size:    "5000",
         cpu_pool:       "RAC2",
         num_cpus:       2,
         vnc_port:       25
@@ -205,33 +205,6 @@
       creates:          "/OVS/iso_pool/{{ item.dvd }}"
     loop:               "{{ iso_images }}"
 
-  # ------------------- Mount ISO Images
-
-  - name:               "Create ISO Image Mount Points"
-    ansible.builtin.file:
-      path:             "/OVS/iso_pool/mounted/{{ item.mp }}"
-      state:            directory
-    loop:               "{{ iso_images }}"
-
-  - name:               "Create Script to Mount ISO Images"
-    ansible.builtin.template:
-      dest:             "/OVS/scripts/mount_dvd.sh"
-      mode:             0700
-      src:              "mount_dvd.sh.j2"
-
-  - name:               "Mount ISO Images Using Script"
-    ansible.builtin.command:
-      cmd:              "/OVS/scripts/mount_dvd.sh"
-    register:           mount_dvd
-    changed_when:       '" mounted as " in mount_dvd.stdout'
-
-  - name:               "Display Output from Mount DVD"
-    ansible.builtin.debug:
-      var:              mount_dvd.stdout_lines
-    when:
-    -                   mount_dvd.changed
-    -                   mount_dvd.stdout_lines is defined
-
   # ------------------- Create Gold Images
 
   - name:               "Stop and disable XEND Service"
@@ -282,14 +255,24 @@
   
   # ------------------- Check for Linux Installations
   
-  - name:               "Copy MD5SUM Checksum Files"
-    ansible.builtin.copy:
-      dest:             /OVS/seed_pool/gold_images_md5sum.dat
-      src:              files/gold_images_md5sum.dat
-  
-  - name:               "Check the Gold Images"
-    ansible.builtin.shell:
-      cmd:              "md5sum --check /OVS/seed_pool/gold_images_md5sum.dat"
+  - name:               "Create Script to Install Linux"
+    ansible.builtin.template:
+      dest:             "/OVS/scripts/install_linux.sh"
+      mode:             0700
+      src:              "install_linux.sh.j2"
+
+  - name:               "Install Linux Using Script"
+    ansible.builtin.command:
+      cmd:              "/OVS/scripts/install_linux.sh"
+    register:           install_linux
+    changed_when:       '"Installed " in install_linux.stdout'
+
+  - name:               "Display Output from Linux Installation"
+    ansible.builtin.debug:
+      var:              install_linux.stdout_lines
+    when:
+    -                   install_linux.changed
+    -                   install_linux.stdout_lines is defined
   
   # ------------------- Create Target VM
   

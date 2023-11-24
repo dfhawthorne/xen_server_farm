@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# ------------------------------------------------------------------------------
+# Check for Linux Installation
+# Will do installation once the procedure is found.
+{% include "header.j2" %}
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+# If the root disk is empty in the first 1GB, then the Linux Installation has
+# not been done.
+# ------------------------------------------------------------------------------
+
+{% for item in iso_images %}
+
+# Check for "{{ item.vm_name }}"
+
+sum=$(sum                                                \
+    <(dd if="/OVS/seed_pool/{{ item.vm_name }}/root.dsk" \
+         bs=1M                                           \
+         count=512                                       \
+         status=none) |                                  \
+      cut -d\  -f1)
+if [[ "${sum}" -eq 0 ]]
+then
+    printf "%s needs to be installed manually.\n" >&2 "{{ item.mp }}"
+    exit 1
+#    findmnt "/OVS/iso_pool/mounted/{{ item.mp }}" || { \
+#        mount -t iso9660 -o loop,ro,noauto "/OVS/iso_pool/{{ item.dvd }}" \
+#            "/OVS/iso_pool/mounted/{{ item.mp }}" && \
+#        printf "%s mounted as %s\n" \
+#            "/OVS/iso_pool/{{ item.dvd }}" \
+#            "/OVS/iso_pool/mounted/{{ item.mp }}"
+#        }
+fi 
+
+{% endfor %}
+
