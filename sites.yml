@@ -95,7 +95,7 @@
         gold_image:     "gold_ol8_1",
         mac_addr_1:     "00:16:3E:00:00:1E",
         bridge_1:       "xenbr0",
-        memory_size:    "5000",
+        memory_size:    "5600",
         cpu_pool:       "RAC1",
         num_cpus:       2,
         vnc_port:       24
@@ -105,7 +105,7 @@
         gold_image:     "gold_ol8_1",
         mac_addr_1:     "00:16:3E:00:00:1F",
         bridge_1:       "xenbr0",
-        memory_size:    "5000",
+        memory_size:    "5600",
         cpu_pool:       "RAC2",
         num_cpus:       2,
         vnc_port:       25

@@ -15,4 +15,7 @@ This is a diary of the design decisions made while building this repository.
 * [2023-11-01](2023_11_01.md) Configure DHCP for Gold Images
 * [2023-11-03](2023_11_03.md) Completed XEN deployment
 * [2023-11-21](2023_11_21.md) Increased Memory for Goldengate
+* [2023-11-25](2023_11_25.md) Added Script to Detect Linux Installation
+* [2023-11-26](2023_11_26.md) Integration into Orchestration
+* [2024-01-04](2024_01_04.md) Increase Memory Size for GoldenGate VMs
 
