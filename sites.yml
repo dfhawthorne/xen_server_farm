@@ -185,12 +185,12 @@
   
   - name:               "Create NFS mount point"
     ansible.builtin.file:
-      path:             "/opt/share/Nundah"
+      path:             "/opt/share/Software"
       state:            directory
   
   - name:               "Mount Software Directory as NFS"
     ansible.posix.mount:
-      path:             "/opt/share/Nundah"
+      path:             "/opt/share/Software"
       src:              "192.168.1.253:/data/Software"
       fstype:           "nfs4"
       opts:             "ro,bg,hard,nointr,rsize=32768,wsize=32768,tcp,vers=4,timeo=600"
@@ -200,7 +200,7 @@
     ansible.builtin.command:
       argv:
       - cp
-      - "/opt/share/Nundah/software/Linux/{{ item.src_dir }}/{{ item.dvd }}"
+      - "/opt/share/Software/Linux/Oracle Enterprise Linux/{{ item.src_dir }}/{{ item.dvd }}"
       - "/OVS/iso_pool/{{ item.dvd }}"
       creates:          "/OVS/iso_pool/{{ item.dvd }}"
     loop:               "{{ iso_images }}"
