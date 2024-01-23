@@ -19,4 +19,4 @@ This is a diary of the design decisions made while building this repository.
 * [2023-11-26](2023_11_26.md) Integration into Orchestration
 * [2024-01-04](2024_01_04.md) Increase Memory Size for GoldenGate VMs
 * [2024-01-17](2024_01_17.md) Relocation of ISO Images
-
+* [2024-01-23](2024_01_23.md) Development Branch for Kickstart Investigation
